@@ -1,0 +1,3 @@
+#!/bin/bash
+
+bash build/distributions/phasecommit/bin/phasecommit $1 $2

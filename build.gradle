@@ -33,4 +33,11 @@ dependencies {
 }
 
 // Define the main class for the application
-mainClassName = 'phasecommit.App'
+mainClassName = 'phasecommit.servers.Server'
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'phasecommit.servers.Server',
+                   'Class-Path': configurations.runtime.files.collect {"lib/$it.name"}.join(' ')
+    }
+}
