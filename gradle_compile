@@ -1,0 +1,5 @@
+#!/bin/sh
+
+./gradlew build
+
+tar -xvf build/distributions/phasecommit.tar -C build/distributions/.
