@@ -4,7 +4,7 @@ import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface MasterInterface extends Remote {
-    int connectReplica(ReplicaInterface replicaStub) throws RemoteException;
+    void connect(ReplicaInterface replicaStub, String replicaIP) throws RemoteException;
 
     String get(int key) throws RemoteException;
 

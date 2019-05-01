@@ -9,3 +9,5 @@ build
 
 # Ignore appication generated directories
 db
+config
+log

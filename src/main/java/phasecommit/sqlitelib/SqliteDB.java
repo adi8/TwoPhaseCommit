@@ -4,10 +4,30 @@ import java.io.File;
 import java.sql.*;
 
 public class SqliteDB {
+    /**
+     * Database home directory.
+     */
     private static final String dbPath = "db/";
 
+    /**
+     * Database name.
+     */
     private String dbName;
 
+    /**
+     * Default constructor.
+     * @param dbName - Database name
+     */
+    public SqliteDB(String dbName) {
+        this.dbName = dbName;
+        createDB();
+    }
+
+    /**
+     * Connects to database db and returns the connection.
+     *
+     * @return Connection - Connection to dbName
+     */
     private Connection connect() {
         String url = "jdbc:sqlite:" + dbPath + dbName;
         Connection con = null;
@@ -21,11 +41,12 @@ public class SqliteDB {
         return con;
     }
 
-    public SqliteDB(String dbName) {
-        this.dbName = dbName;
-        createDB();
-    }
-
+    /**
+     * Create database dbName.
+     *
+     * @return int - 0 - Success
+     *               1 - Failure
+     */
     public int createDB() {
         int retval = 0;
 
@@ -63,6 +84,14 @@ public class SqliteDB {
         return retval;
     }
 
+    /**
+     * Stores the given key and value in database.
+     *
+     * @param key - Integer key
+     * @param value - Value corresponding to key
+     * @return int - >=0 - Success
+     *               -1 - Failure
+     */
     public int put(int key, String value) {
         int retval = 0;
 
@@ -75,13 +104,20 @@ public class SqliteDB {
             retval = pstmt.executeUpdate();
         }
         catch (SQLException e) {
-            System.out.println("ERROR: " + e.getMessage());
             retval = -1;
         }
 
         return retval;
     }
 
+    /**
+     * Deletes the key-value pair associated with given
+     * key.
+     *
+     * @param key - Key to be deleted
+     * @return int - >=0 - Success
+     *               -1 - Failure
+     */
     public int del(int key) {
         int retval = 0;
 
@@ -93,17 +129,22 @@ public class SqliteDB {
             retval = pstmt.executeUpdate();
         }
         catch (SQLException e) {
-            System.out.println("ERROR: " + e.getMessage());
             retval = -1;
         }
 
         return retval;
     }
 
+    /**
+     * Returns the value corresponding to given key.
+     *
+     * @param key - Key of value to be returned
+     * @return String - Value corresponding to given key
+     */
     public String get(int key) {
         String sql = "SELECT data_val FROM data_map WHERE data_key = ?";
 
-        String value = "";
+        String value = null;
         try (Connection con = this.connect();
              PreparedStatement pstmt = con.prepareStatement(sql)) {
             pstmt.setInt(1, key);
@@ -115,12 +156,15 @@ public class SqliteDB {
             }
         }
         catch (SQLException e) {
-            System.out.println("ERROR: " + e.getMessage());
+            value = null;
         }
 
         return value;
     }
 
+    /**
+     * Delete associated database (dbName).
+     */
     public void deleteDB() {
         File dbFile = new File(dbPath + dbName);
         if (dbFile.exists()) {

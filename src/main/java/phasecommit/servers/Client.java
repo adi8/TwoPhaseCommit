@@ -65,7 +65,63 @@ public class Client {
                                 break;
                             }
                             String value = masterStub.get(key);
-                            System.out.println("Value: " + value);
+
+                            if (value == null) {
+                                System.out.println("No such value exists");
+                            }
+                            else {
+                                System.out.println("Value: " + value);
+                            }
+                        }
+                        break;
+
+                    case "put":
+                        if (commandParts.length != 3) {
+                            System.out.println(usage);
+                        }
+                        else {
+                            int key = -1;
+                            try {
+                                key = Integer.parseInt(commandParts[1]);
+                            }
+                            catch (NumberFormatException e) {
+                                System.out.println("ERROR: key has to be an int.");
+                                System.out.println(usage);
+                                break;
+                            }
+
+                            String val = commandParts[2];
+
+                            int retval = masterStub.put(key, val);
+
+                            if (retval > 0)
+                                System.out.println("Failed to put key/value " + key + "/" + val + " Try again");
+                            else
+                                System.out.println("Successfully put key/value " + key + "/" + val);
+                        }
+                        break;
+
+                    case "del":
+                        if (commandParts.length != 2) {
+                            System.out.println(usage);
+                        }
+                        else {
+                            int key = -1;
+                            try {
+                                key = Integer.parseInt(commandParts[1]);
+                            }
+                            catch (NumberFormatException e) {
+                                System.out.println("ERROR: key hsa to be an int.");
+                                System.out.println(usage);
+                                break;
+                            }
+
+                            int retval = masterStub.del(key);
+
+                            if (retval > 0)
+                                System.out.println("Failed to delete key " + key + ". Try again");
+                            else
+                                System.out.println("Successfully deleted key " + key);
                         }
                         break;
 

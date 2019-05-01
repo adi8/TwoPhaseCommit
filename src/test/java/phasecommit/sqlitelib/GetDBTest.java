@@ -18,13 +18,13 @@ public class GetDBTest {
         db.put(6, "file6");
 
         String val = db.get(1);
-        assertEquals("failure - returned \"\" should return \"file1\"", "file1", val);
+        assertEquals("failure - returned null should return \"file1\"", "file1", val);
 
         val = db.get(4);
-        assertEquals("failure - returned \"\" should return \"file4\"", "file4", val);
+        assertEquals("failure - returned null should return \"file4\"", "file4", val);
 
         val = db.get(7);
-        assertEquals("failure - returned \"" + val + "\" should return \"\"", "", val);
+        assertEquals("failure - returned \"" + val + "\" should return null", null, val);
 
         db.deleteDB();
     }

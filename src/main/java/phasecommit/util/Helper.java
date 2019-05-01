@@ -1,5 +1,8 @@
 package phasecommit.util;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
@@ -45,5 +48,37 @@ public class Helper {
 
         return ipAddress;
     }
+
+    /**
+     * Writes to log file details of a given transaction.
+     *
+     * @param recType - Record type
+     * @param transactionID - Transaction ID
+     * @param status - Status of transaction
+     * @param op - Operation associated with transaction
+     * @param key - Key to be stored/deleted/retrieved
+     * @param val - Value corresponding to key (for store operation)
+     */
+    public static void writeToLog(String logName, int recType, int transactionID,
+                                  String status, String op, int key, String val)
+    {
+        try (FileWriter fw = new FileWriter(logName, true);
+             BufferedWriter bw = new BufferedWriter(fw);) {
+            String entry = String.format("%d:%06d:%s:%s:%d:%s\n",
+                    recType,
+                    transactionID,
+                    status,
+                    op,
+                    key,
+                    val
+            );
+            bw.write(entry);
+            bw.flush();
+        }
+        catch (IOException e) {
+            System.out.println("ERROR: " + e.getMessage());
+        }
+    }
+
 
 }
