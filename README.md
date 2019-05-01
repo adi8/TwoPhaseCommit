@@ -18,8 +18,15 @@
 Note: 
 1. For master you need to have a _master.properties_ file in 
 _config_ folder in the directory where _server_ is triggered.
-2. Directory where _server_ is triggered should have the _sqlite-jdbc_ folder
+2. Directory where _server_ is triggered should have the 
+_sqlite-jdbc_ folder provide. It has the sqllite-jdbc jar file.
 
+* master.properties has the following:
+```
+replica.servers=<replica_1_server_ip> <replica_2_server_ip> ...
+```
+
+These are space separated ip addresses of replica servers.
 
 #### Replica
 ```

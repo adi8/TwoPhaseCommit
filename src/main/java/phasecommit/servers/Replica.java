@@ -178,6 +178,18 @@ public class Replica implements ReplicaInterface {
     }
 
     /**
+     * Saves a local checkpoint.
+     */
+    public int checkpointRequest() {
+        // Wait for current transactions to get over
+        while (transactions.size() != 0) {}
+
+        Helper.writeToLog(logName, 1, -1, "checkpoint", "", -1, "");
+
+        return 1;
+    }
+
+    /**
      * Return the value corresponding to given key.
      *
      * @param key - Key for which corresponding value is

@@ -37,11 +37,24 @@ public class Master implements MasterInterface {
     private static final String LOG_NAME = "log/master.log";
 
     /**
+     * Checkpoing flag. Indicates whether checkpoint process is
+     * about to start.
+     */
+    private boolean checkpointFlag;
+
+    /**
+     * Transacts in system.
+     */
+    private Map<Integer, String> transactions;
+
+    /**
      * Default Constructor
      */
     public Master() {
         replicaServerStubs = new HashMap<>();
         transactionIDGen = new AtomicInteger();
+        checkpointFlag = false;
+        transactions = new HashMap<>();
     }
 
     /**
@@ -67,6 +80,11 @@ public class Master implements MasterInterface {
      * @return String - Value corresponding to given key
      */
     public String get(int key) {
+        // Forcing a failure as checkpoint is to start/started.
+        if (checkpointFlag) {
+            return null;
+        }
+
         ReplicaInterface replicaServerStub = null;
         int idx = (int) (Math.random() * replicaServerStubs.values().size());
         for (ReplicaInterface rep : replicaServerStubs.values()) {
@@ -94,6 +112,11 @@ public class Master implements MasterInterface {
      *               1: Failure
      */
     public int put(int key, String val) {
+        // Forcing a failure as checkpoint is to start/started.
+        if (checkpointFlag) {
+            return 1;
+        }
+
         int retval = 0;
 
         // Extract a unique transaction ID generator.
@@ -101,6 +124,10 @@ public class Master implements MasterInterface {
 
         // Write to log
         Helper.writeToLog(LOG_NAME, 0, transactionID, "request", "put", key, val);
+
+        synchronized (transactions) {
+            transactions.put(transactionID, String.format("%s:%d:%s", "put", key, val));
+        }
 
         List<Integer> votes = new ArrayList<>();
         for (ReplicaInterface rep : replicaServerStubs.values()) {
@@ -157,6 +184,10 @@ public class Master implements MasterInterface {
             Helper.writeToLog(LOG_NAME, 0, transactionID, "aborted", "put", key, val);
         }
 
+        synchronized (transactions) {
+            transactions.remove(transactionID);
+        }
+
         return retval;
     }
 
@@ -168,6 +199,11 @@ public class Master implements MasterInterface {
      *               1: Failure
      */
     public int del(int key) {
+        // Forcing a failure as checkpoint is to start/started.
+        if (checkpointFlag) {
+            return 1;
+        }
+
         int retval = 0;
 
         // Extract a unique transaction ID
@@ -175,6 +211,10 @@ public class Master implements MasterInterface {
 
         // Write to log
         Helper.writeToLog(LOG_NAME, 0, transactionID, "request", "del", key, "");
+
+        synchronized (transactions) {
+            transactions.put(transactionID, String.format("%s:%d:%s", "del", key, ""));
+        }
 
         List<Integer> votes = new ArrayList<>();
 
@@ -223,7 +263,41 @@ public class Master implements MasterInterface {
             Helper.writeToLog(LOG_NAME, 0, transactionID, "aborted", "del", key, "");
         }
 
+        synchronized (transactions) {
+            transactions.remove(transactionID);
+        }
+
         return retval;
+    }
+
+    /**
+     * Co-ordinates with all replicas to log local checkpoints.
+     */
+    public void startCheckpointProcess() {
+        synchronized (this) {
+            checkpointFlag = true;
+        }
+
+        // Block until all current transactions have been processed
+        while (transactions.size() != 0) {}
+
+        boolean checkPointSuccess = true;
+        for (ReplicaInterface replica : replicaServerStubs.values()) {
+            try {
+                replica.checkpointRequest();
+            }
+            catch (RemoteException e) {
+                checkPointSuccess = false;
+            }
+        }
+
+        if (checkPointSuccess) {
+            Helper.writeToLog(LOG_NAME, 1, -1, "checkpoint", "", -1, "");
+        }
+
+        synchronized (this) {
+            checkpointFlag = false;
+        }
     }
 
     /**
@@ -284,6 +358,15 @@ public class Master implements MasterInterface {
 
         // Get replica server stubs incase they are already up.
         getReplicaServerStubs(replicaServers, master);
+
+        // Send check point request every 30 seconds
+//        Timer timer = new Timer();
+//        timer.scheduleAtFixedRate(new TimerTask() {
+//            @Override
+//            public void run() {
+//                master.startCheckpointProcess();
+//            }
+//        }, 0, 30*1000);
 
         // TODO: Replay log if there are any transactions that require this.
 

@@ -119,9 +119,9 @@ public class Client {
                             int retval = masterStub.del(key);
 
                             if (retval > 0)
-                                System.out.println("Failed to delete key " + key + ". Try again");
-                            else
                                 System.out.println("Successfully deleted key " + key);
+                            else
+                                System.out.println("Failed to delete key " + key + ". Try again");
                         }
                         break;
 
